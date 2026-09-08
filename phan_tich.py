@@ -59,6 +59,20 @@ def tinh_loi_nhuan(tong_hop):
     pivot['thay_doi_loi_nhuan_%'] = pivot['loi_nhuan'].pct_change() * 100
     return pivot
 
+def phat_hien_bat_thuong_iqr(df):
+    """
+    Loc ra cac dong bat thuong dua tren IQR (Interquartile Range),
+    it bi anh huong boi outlier hon so voi mean + 2*std.
+    """
+    q1 = df['amount'].quantile(0.25)
+    q3 = df['amount'].quantile(0.75)
+    iqr = q3 - q1
+
+    nguong_duoi = q1 - 1.5 * iqr
+    nguong_tren = q3 + 1.5 * iqr
+
+    bat_thuong = df[(df['amount'] < nguong_duoi) | (df['amount'] > nguong_tren)]
+    return bat_thuong
 
 if __name__ == "__main__":
 
