@@ -143,3 +143,32 @@ Code được tổ chức thành các hàm độc lập, mỗi hàm đảm nhi�
 - Hỗ trợ nhiều định dạng file đầu vào (CSV, Google Sheets)
 - Cho phép tuỳ chỉnh ngưỡng phát hiện bất thường qua tham số dòng lệnh
 - Thêm unit test cho từng hàm xử lý
+## Phát hiện bất thường: So sánh 2 phương pháp / Anomaly Detection: Method Comparison
+
+Project cung cấp 2 phương pháp phát hiện giao dịch bất thường:
+
+1. **Mean + 2×Std** — phương pháp gốc, đơn giản, không cần dữ liệu gắn nhãn trước.
+2. **IQR (Interquartile Range)** — dựa trên vị trí dữ liệu khi sắp xếp (Q1, Q3), ít bị ảnh hưởng bởi outlier hơn.
+
+**Phát hiện quan trọng qua unit test:** Với dữ liệu có 1 outlier rất lớn so với phần còn lại (ví dụ 1 giao dịch gấp ~50 lần trung bình, trong mẫu nhỏ), phương pháp `mean + 2×std` **bỏ sót hoàn toàn** giao dịch này — vì chính outlier đó kéo lệch cả trung bình lẫn độ lệch chuẩn, khiến ngưỡng phát hiện tăng theo sát giá trị của nó (masking effect). Phương pháp `IQR` phát hiện đúng outlier này trong cùng bộ dữ liệu.
+
+→ Khuyến nghị: chạy song song cả 2 phương pháp trên dữ liệu thật; giao dịch bị cả 2 cùng đánh dấu có độ tin cậy cao hơn. Công cụ này đóng vai trò hỗ trợ (flag), quyết định cuối cùng vẫn thuộc về người có chuyên môn nghiệp vụ (kế toán/tài chính).
+
+---
+
+Project provides 2 anomaly detection methods:
+
+1. **Mean + 2×Std** — original method, simple, no labeled data required.
+2. **IQR (Interquartile Range)** — based on data position when sorted (Q1, Q3), less sensitive to outliers.
+
+**Key finding from unit testing:** With a dataset containing one very large outlier relative to the rest (e.g. a transaction ~50× the sample mean, in a small sample), the `mean + 2×std` method **completely missed** the outlier — because the outlier itself inflates both the mean and standard deviation, pushing the detection threshold up close to its own value (a "masking effect"). The `IQR` method correctly flagged the same outlier on identical data.
+
+→ Recommendation: run both methods in parallel on real data; transactions flagged by both carry higher confidence. This tool is designed to assist (flag candidates), not replace human judgment — final decisions remain with finance/accounting staff.
+
+## Testing
+
+Unit tests covering both methods, including boundary cases (identical values, exact threshold), can be found in `test_phan_tich.py` and `test_phan_tich_iqr.py`. Run with:
+
+\`\`\`bash
+python -m pytest -v
+\`\`\`
